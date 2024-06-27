@@ -49,3 +49,4 @@ The top level Dockerfile does work. It uses a basic cronjob to run eia download 
 Build container - docker build -t pipeline_pred .
 Run container in background - docker run -d --restart unless-stopped --name pipe_predictor pipeline_pred:latest
 
+WIP to say the least :)
