@@ -1,0 +1,11 @@
+neuralprophet
+xlrd
+seaborn
+fastapi
+requests
+python-dotenv
+mysql-connector-python
+numpy
+pandas
+plotly
+yfinance
