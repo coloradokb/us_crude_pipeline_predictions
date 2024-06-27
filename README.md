@@ -45,6 +45,13 @@ Predictions are hard and having a workspace such as jupyter notebooks should als
 ### DOCKER container
 The top level Dockerfile does work. It uses a basic cronjob to run eia download and prediction python scripts every hour and two hours respecitively. There's an argument to not run this in a container w/the size of neuralprophet, but it will work in container.
 
+### Data Storage
+Most data is downloaded (eia and yfinance) to build .csv files. However, storing data persistently for past predictions is setup for a mysql db. For storage in mysql add in -- don't commit! -- a .env file with the following vars:
+DB_HOST=<host by ip or name>
+DB_DATABASE=<database name>
+DB_USER=<database user>
+DB_PASSWORD=<database pass>
+
 ### Basic build and run commands for quick-ref:
 Build container - docker build -t pipeline_pred .
 Run container in background - docker run -d --restart unless-stopped --name pipe_predictor pipeline_pred:latest
