@@ -37,7 +37,9 @@ The structure of this app will have a mix of some notebooks and python files to 
 ]
 
 ### Visualization
-WIP, but to make this more palletable, a graphical interface should be implemented.
+WIP, but to make this more palletable, a graphical interface should be implemented. Example image of plotly graph/data:
+
+![alt text](images/plotly-example.webp)
 
 ### Notebooks / research
 Predictions are hard and having a workspace such as jupyter notebooks should also be a target.
