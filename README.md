@@ -6,6 +6,7 @@ Using [EAI](http://ir.eia.gov) data that contains weekly pipeline oil flows and 
 This is an attempt to predict the WCESTUS1 reserves level one or more weeks in advance using varying ML modeling techniques.
 
 The structure of this app will have a mix of some notebooks and python files to retrieve data, try variations of models, and visualize. It also will have an API endpoint to retrieve the data. Example here:
+```
 [...
   {
     "report_date": 1718323200000,
@@ -35,7 +36,7 @@ The structure of this app will have a mix of some notebooks and python files to 
     "report_date_formatted": "06-28-2024"
   }
 ]
-
+```
 ### Visualization
 WIP, but to make this more palletable, a graphical interface should be implemented. Example image of plotly graph/data:
 
