@@ -3,14 +3,15 @@ import time
 import json
 from fastapi import FastAPI, Response
 from prediction_data import PredictionData
+from typing import Optional
 
 app = FastAPI()
 
 @app.get('/predictions')
-def get_data():
+def get_data(target: Optional[str] = 'TOTALSUPPLY'):
     # Convert DataFrame to JSON
-    obj = PredictionData('2023-11-09','2024-12-31','./pipeline_predictions.db')
-    pred_data_df = obj.read_pipeline_pred()
+    obj = PredictionData('2023-11-09', '2031-12-31', './pipeline_predictions.db')
+    pred_data_df = obj.read_pipeline_pred('json', target)
     json_output = pred_data_df.to_json(orient='records')
 
     # Parse JSON string into list of dictionaries

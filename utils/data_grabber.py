@@ -120,6 +120,14 @@ class DataGrabber:
         # Merge the DataFrames on the date column
         merged_df = pd.merge(inventory_df, pricing_df[['CurrentClose']], on='Date', how='left')
         merged_df = pd.merge(merged_df, futures_df[['FuturesClose']], on='Date', how='left')
+        merged_df.fillna(0, inplace=True)
+        # print(merged_df.tail(5))
+        # sys.exit(0)
+        merged_df['TOTALSUPPLY'] = merged_df.iloc[:, 0:-2].sum(axis=1)
+
+        cols = list(merged_df.columns)
+        cols.insert(0, cols.pop(cols.index('TOTALSUPPLY')))
+        merged_df = merged_df[cols]
 
         if date_to_ds:
             merged_df.reset_index(inplace=True)
