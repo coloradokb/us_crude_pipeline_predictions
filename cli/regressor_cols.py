@@ -51,10 +51,12 @@ def cols_for_total():
 
 def feature_selection():
     full_list = [
-        "TOTALSUPPLY", "WCRSTUS1", "WCESTUS1", "WCESTP11", "WCESTP21", "W_EPC0_SAX_YCUOK_MBBL",
-        "WCESTP31", "WCESTP41", "WCESTP51", "W_EPC0_SKA_NUS_MBBL", "WCSSTUS1", "WGTSTUS1",
-        "WGTSTP11", "WGTSTP21", "WGTSTP31", "WGTSTP41", "WGTSTP51", "WGFSTUS1",
-        "CurrentClose", "FuturesClose"
+        "TOTALSUPPLY", "WCRSTUS1", "WCESTUS1", "WCESTP11", "WCESTP21",
+        "W_EPC0_SAX_YCUOK_MBBL", "WCESTP31", "WCESTP41", "WCESTP51",
+        "W_EPC0_SKA_NUS_MBBL", "WCSSTUS1", "WGTSTUS1", "WGTSTP11",
+        "WGTSTP21", "WGTSTP31", "WGTSTP41", "WGTSTP51", "WGFSTUS1",
+        "WO6ST_NUS_1", "WO6ST_R10_1", "WO6ST_R20_1", "WO6ST_R30_1",
+        "WO6ST_R40_1", "WO6ST_R50_1", "CurrentClose", "FuturesClose"
     ]
 
     return full_list
