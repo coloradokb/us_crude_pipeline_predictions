@@ -171,6 +171,7 @@ class DataGrabber:
     def update_database(self, data: pd.DataFrame) -> None:
         conn = self.create_db_connection()
         cursor = conn.cursor()
+        cursor2 = conn.cursor()
         print("tail--------")
         print(data.tail(5))
         print(data.describe())
@@ -178,24 +179,87 @@ class DataGrabber:
         # We only want records post 2023-11-10 as that is when
         # we began making predictions
         new_df = data[data.index > self.db_inventory_start_date]
+        new_df.fillna(0, inplace=True)
         print("new df_--------")
         print(new_df.tail(5))
+        # Iterate over each row
+        # sys.exit(0)
+
+        # for index, row in new_df.iterrows():
+        #     # print(f"Date: {index}")
+        #     # Iterate over each column
+        #     for column in new_df.columns:
+        #         print(f"Date: {index} ==> {column}: {row[column]}")
+        #         mysql = f"UPDATE predictions SET actual_supply={row[column]} \
+        #                 WHERE \
+        #                 eia_pred_target_id=(select id from eia_pipelines where name=\"{column}\" and report_date='{index}')"
+        #         print(f"~~~~~> {mysql.replace('\n', ' ')}")
+        #     print("\n")
+
+        #sys.exit(0)
+        total_sum = 0
         # Update the records in the "predictions" table
         try:
             for index, row in new_df.iterrows():
+
                 #print(f"Index: {index.date}")
-                db_index = pd.to_datetime(index).date()
-                print(f"DB_INDEX: {db_index}")
-                print(f"DB==>row: {row['WCESTUS1']}")
-                sql = "UPDATE predictions SET actual_supply=%s, eia_pred_target_id=%s WHERE report_date=%s" # customers (id, name) VALUES (%s, %s)"
-                print(f"Params: {row['WCESTUS1']}, 1, {db_index}")
-                cursor.execute(sql, (row['WCESTUS1'], 1, db_index)) # "Valley 345"))
+                #db_index = pd.to_datetime(index).date()
+                #print()
+                for column in new_df.columns:
+                    sql = "UPDATE predictions \
+                           SET actual_supply=%s \
+                           WHERE eia_pred_target_id=(select id from \
+                           eia_pipelines where name=%s and report_date=%s)"
+#                    print(sql)
+                    #print(type(row[column]))
+ #                   print(f"Params: {int(row[column])}, {column}, {index}")
+                    cursor.execute(sql, (int(row[column]), column, index))
+                    conn.commit()
+                    #print("Records updated successfully.")
+                    total_sum = int(row[column]) + total_sum
+                print(f"TOTAL SUM for week {index} = {total_sum}")
+                sum_sql = "UPDATE predictions \
+                           SET actual_supply=%s \
+                           WHERE eia_pred_target_id=(select id from \
+                           eia_pipelines where name=%s and report_date=%s)"
+                # print(sum_sql)
+                print(f"==> {sum_sql}, {total_sum}, \"TOTALSUPPLY\", {index}")
+                cursor.execute(sum_sql, (total_sum, "TOTALSUPPLY", index))
+                total_sum = 0
                 conn.commit()
-                print("Records updated successfully.")
+                # We also need to get sum of all columns for each week and
+                # construct the TOTALSUPPLY
+
+
         except Exception as e:
             print(f"Error updating records: {e}")
 
         conn.close()
+
+    # def insert_supply_records(self, df:pd.DataFrame):
+    #     """
+    #     mostly a one-time call to populate the eia_supply table
+    #     possible worth looking at weaving into weekly updates,
+    #     but probably not
+    #     """
+    #     conn = self.create_db_connection()
+    #     cursor = conn.cursor()
+    #     print("tail--------")
+    #     print(df.tail(5))
+    #     print(df.describe())
+
+    #     for index, row in df.iterrows():
+    #         # print(f"Date: {index}")
+    #         # Iterate over each column
+    #         for column in df.columns:
+    #             print(f"Date: {index} ==> {column}: {row[column]}")
+    #             mysql = f"INSERT INTO eia_supply (report_date, quantity) SET actual_supply={row[column]}, \
+    #                      eia_pred_target_id=\"{column}\" WHERE \
+    #                      eia_pred_target=(select id from eia_pipelines where name=\"{column}\" and \
+    #                      report_date={index})"
+    #             print(f"~~~~~> {mysql}")
+    #         print("\n")
+
 
     def process_all_files(self, make_class_df: bool = False):
         #self.capture_datafiles()

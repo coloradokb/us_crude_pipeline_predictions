@@ -12,6 +12,7 @@ data_dir = os.path.join(script_dir, '..', 'utils', 'data')
 
 dg_obj = DataGrabber('2015-01-01', data_dir)
 dg_obj.process_all_files(True)
+# dg_obj.insert_supply_records(dg_obj.pipeline_data_df)
 dg_obj.update_database(dg_obj.pipeline_data_df)
 
 
