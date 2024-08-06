@@ -142,46 +142,37 @@ class ModelMaker:
         cur = conn.cursor()
 
         try:
-            # Create the table
-            # cur.execute("""CREATE TABLE IF NOT EXISTS predictions (
-            #             id INTEGER PRIMARY KEY,
-            #             report_date TEXT NOT NULL,
-            #             actual_supply REAL NOT NULL,
-            #             eia_pred_target_id INTEGER NOT NULL,
-            #             prediction REAL NOT NULL,
-            #             updated_date TEXT NOT NULL,
-            #             regressor_count INTEGER NOT NULL)""")
-            # # Commit the changes
-            # conn.commit()
-            # Lookup id of eia_pipeline we are predicting for
+            print(f"Len: {len(prediction_dict)}")
             cur.execute("SELECT id from eia_pipelines where name = %s", (self.pred_columns[0],))
             rows = cur.fetchall()
             col_id = rows[0][0] # We expect only a single value in tuple
-            print(f"COL: {col_id}")
-            print(type(col_id))
 
-            print(f'PRED:{type(prediction_dict["Prediction"][-1::].to_string(index=False))}')
-            pred_date = prediction_dict["ds"][-1::].to_string(index=False)
-            pred_value = int(prediction_dict["Prediction"][-1::].to_string(index=False))
+            for index, row in prediction_dict.iloc[-13:].iterrows():
+                print(f"I-R: {index} / {row} / {row['Prediction']}")
+                pred_date = row["ds"].strftime('%Y-%m-%d')
+                pred_value = row['Prediction']
 
+                # Check to see if a record already exists. We will not change
+                # predictions except for maybe the next (upcoming) one if we
+                # dynamically change before eia supply release
+                cur.execute(f"select id from predictions where report_date ='{pred_date}' \
+                            and eia_pred_target_id = (select id from eia_pipelines where name='{self.pred_columns[0]}')")
+                rows = cur.fetchall()
 
-            # Check if the prediction already exists
-            cur.execute(f"select id from predictions where report_date ='{pred_date}' and eia_pred_target_id = {col_id}")
-            rows = cur.fetchall()
-            if len(rows) == 0:
-                cur.execute("""INSERT INTO predictions (report_date,eia_pred_target_id,
-                            prediction, updated_date, regressor_count)
-                            VALUES (%s, %s, %s, %s, %s)""",
+                if len(rows) == 0:
+                    cur.execute("""INSERT INTO predictions (report_date,eia_pred_target_id,
+                                prediction, updated_date, regressor_count)
+                                VALUES (%s, %s, %s, %s, %s)""",
                                 (pred_date, col_id, pred_value, pred_date, self.regressor_count))
-                conn.commit()
-            else:
-                print("Prediction already exists. Not updating automatically")
+                    conn.commit()
+                    print(f"LR: {cur.lastrowid}")
+                else:
+                    print("Prediction already exists. Not updating automatically")
             conn.close()
-            print(f"LR: {cur.lastrowid}")
-            return cur.lastrowid
         except Exception as err:
             print("ERR")
             print(err)
+            sys.exit(0)
 
 
 #startTime = datetime.now()
