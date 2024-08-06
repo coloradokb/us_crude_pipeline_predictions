@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import seaborn as sns
 # import sqlite3
 # from datetime import timedelta, datetime
@@ -11,9 +11,9 @@ from db_conn import DatabaseConnector
 
 class ModelMaker:
 
-    def __init__(self, rand_seed, eia_regressor_columns, pred_columns,
-                 full_data_file, epochs=500, n_lags=8, n_forecasts=1,
-                 store_predictions=True):
+    def __init__(self, rand_seed, eia_regressor_columns,
+                 pred_columns, full_data_file, epochs=500, n_lags=8,
+                 n_forecasts=1, store_predictions=True):
         self.rand_seed = rand_seed
         self.eia_regressor_columns = eia_regressor_columns
         self.pred_columns = pred_columns
@@ -41,6 +41,7 @@ class ModelMaker:
     def fit_model(self, df, pred_column, col_list): #feature_cols, lags, forecast_length):
         set_random_seed(self.rand_seed)
         set_log_level(self.log_level)
+
         df = df.rename(columns={pred_column: 'y'})
         # quantiles = [0.01, 0.99]
 
@@ -57,6 +58,7 @@ class ModelMaker:
             # quantiles=quantiles,
         )
         # m.set_plotting_backend("matplotlib")
+
         for col in col_list:
             m.add_lagged_regressor(col)
         m.fit(df)
@@ -67,7 +69,10 @@ class ModelMaker:
         if type(pred_column) == list:
             pred_column = pred_column[0]
         df = df.rename(columns={pred_column: 'y'})
-        df_future = m.make_future_dataframe(df, n_historic_predictions=True, periods=1)
+
+        df_future = m.make_future_dataframe(df, n_historic_predictions=True,
+                                            periods=1)
+        #sys.exit(0)
         forecast = m.predict(df_future)
 
         # Rename and clean up
@@ -78,7 +83,7 @@ class ModelMaker:
         forecast = forecast.drop(['trend'], axis=1)
         forecast.rename(columns={"y": "Actual", "yhat1": "Prediction"}, inplace=True)
         forecast = forecast.iloc[:,[0,1,2]]
-        print(forecast[-10::])
+        print(forecast[-13::])
 
         return forecast
 
@@ -137,50 +142,42 @@ class ModelMaker:
         cur = conn.cursor()
 
         try:
-            # Create the table
-            # cur.execute("""CREATE TABLE IF NOT EXISTS predictions (
-            #             id INTEGER PRIMARY KEY,
-            #             report_date TEXT NOT NULL,
-            #             actual_supply REAL NOT NULL,
-            #             eia_pred_target_id INTEGER NOT NULL,
-            #             prediction REAL NOT NULL,
-            #             updated_date TEXT NOT NULL,
-            #             regressor_count INTEGER NOT NULL)""")
-            # # Commit the changes
-            # conn.commit()
-            # Lookup id of eia_pipeline we are predicting for
+            print(f"Len: {len(prediction_dict)}")
             cur.execute("SELECT id from eia_pipelines where name = %s", (self.pred_columns[0],))
             rows = cur.fetchall()
             col_id = rows[0][0] # We expect only a single value in tuple
-            print(f"COL: {col_id}")
-            print(type(col_id))
 
-            print(f'PRED:{type(prediction_dict["Prediction"][-1::].to_string(index=False))}')
-            pred_date = prediction_dict["ds"][-1::].to_string(index=False)
-            pred_value = int(prediction_dict["Prediction"][-1::].to_string(index=False))
+            for index, row in prediction_dict.iloc[-13:].iterrows():
+                print(f"I-R: {index} / {row} / {row['Prediction']}")
+                pred_date = row["ds"].strftime('%Y-%m-%d')
+                pred_value = row['Prediction']
 
+                # Check to see if a record already exists. We will not change
+                # predictions except for maybe the next (upcoming) one if we
+                # dynamically change before eia supply release
+                cur.execute(f"select id from predictions where report_date ='{pred_date}' \
+                            and eia_pred_target_id = (select id from eia_pipelines where name='{self.pred_columns[0]}')")
+                rows = cur.fetchall()
 
-            # Check if the prediction already exists
-            cur.execute(f"select id from predictions where report_date ='{pred_date}' and eia_pred_target_id = {col_id}")
-            rows = cur.fetchall()
-            if len(rows) == 0:
-                cur.execute("""INSERT INTO predictions (report_date,eia_pred_target_id,
-                            prediction, updated_date, regressor_count)
-                            VALUES (%s, %s, %s, %s, %s)""",
+                if len(rows) == 0:
+                    cur.execute("""INSERT INTO predictions (report_date,eia_pred_target_id,
+                                prediction, updated_date, regressor_count)
+                                VALUES (%s, %s, %s, %s, %s)""",
                                 (pred_date, col_id, pred_value, pred_date, self.regressor_count))
-                conn.commit()
-            else:
-                print("Prediction already exists. Not updating automatically")
+                    conn.commit()
+                    print(f"LR: {cur.lastrowid}")
+                else:
+                    print("Prediction already exists. Not updating automatically")
             conn.close()
-            print(f"LR: {cur.lastrowid}")
-            return cur.lastrowid
         except Exception as err:
             print("ERR")
             print(err)
+            sys.exit(0)
 
 
-# startTime = datetime.now()
+#startTime = datetime.now()
 # obj = ModelMaker(42, ['RCLC4', 'RCLC3', 'RCLC2'], ['WCESTUS1'], 600, 8, 1)
+# obj.full_prediction()
 
 # prediction = obj.fun_full_prediction()
 # print(prediction)
