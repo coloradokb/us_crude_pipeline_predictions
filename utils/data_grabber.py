@@ -171,31 +171,37 @@ class DataGrabber:
     def update_database(self, data: pd.DataFrame) -> None:
         conn = self.create_db_connection()
         cursor = conn.cursor()
-        print("tail--------")
-        print(data.tail(5))
-        print(data.describe())
 
         # We only want records post 2023-11-10 as that is when
         # we began making predictions
         new_df = data[data.index > self.db_inventory_start_date]
-        print("new df_--------")
-        print(new_df.tail(5))
+        new_df.fillna(0, inplace=True)
+        # print(new_df.tail(5))
         # Update the records in the "predictions" table
         try:
             for index, row in new_df.iterrows():
-                #print(f"Index: {index.date}")
-                db_index = pd.to_datetime(index).date()
-                print(f"DB_INDEX: {db_index}")
-                print(f"DB==>row: {row['WCESTUS1']}")
-                sql = "UPDATE predictions SET actual_supply=%s, eia_pred_target_id=%s WHERE report_date=%s" # customers (id, name) VALUES (%s, %s)"
-                print(f"Params: {row['WCESTUS1']}, 1, {db_index}")
-                cursor.execute(sql, (row['WCESTUS1'], 1, db_index)) # "Valley 345"))
+                total_sum = 0
+                for column in new_df.columns:
+                    sql = "UPDATE predictions \
+                           SET actual_supply=%s \
+                           WHERE eia_pred_target_id=(select id from \
+                           eia_pipelines where name=%s and report_date=%s)"
+                    cursor.execute(sql, (int(row[column]), column, index))
+                    conn.commit()
+                    total_sum = int(row[column]) + total_sum
+                print(f"TOTAL SUM for week {index} = {total_sum}")
+                sum_sql = "UPDATE predictions \
+                           SET actual_supply=%s \
+                           WHERE eia_pred_target_id=(select id from \
+                           eia_pipelines where name=%s and report_date=%s)"
+                print(f"==> {sum_sql}, {total_sum}, \"TOTALSUPPLY\", {index}")
+                cursor.execute(sum_sql, (total_sum, "TOTALSUPPLY", index))
+                total_sum = 0
                 conn.commit()
-                print("Records updated successfully.")
         except Exception as e:
+            conn.close()
             print(f"Error updating records: {e}")
 
-        conn.close()
 
     def process_all_files(self, make_class_df: bool = False):
         #self.capture_datafiles()
