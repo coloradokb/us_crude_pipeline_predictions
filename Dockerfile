@@ -32,8 +32,8 @@ COPY ./cli /app/cli
 COPY ./utils/.env /app/utils
 
 # Add cron jobs - 1 for download and 1 for prediction
-RUN echo "32,35 8,10 * * 2,3,4 /app/venv/bin/python /app/utils/main.py" > /etc/cron.d/mycron
-RUN echo "45 6 * * 2,3,4 cd /app/cli && /app/venv/bin/python main.py" >> /etc/cron.d/mycron
+RUN echo "45 10 * * 2,3,4 /app/venv/bin/python /app/utils/main.py" > /etc/cron.d/mycron
+RUN echo "55 10 * * 2,3,4 cd /app/cli && /app/venv/bin/python main.py" >> /etc/cron.d/mycron
 
 # Give execution rights on the cron job
 RUN chmod 0644 /etc/cron.d/mycron
