@@ -8,7 +8,6 @@ from pydantic import BaseModel, ValidationError
 import logging
 
 logger = logging.getLogger(__name__)
-#logging.basicConfig(filename='api.log', encoding='utf-8', level=logging.INFO)
 logging.basicConfig(filename='api.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 

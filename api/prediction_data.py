@@ -1,8 +1,5 @@
 import pandas as pd
 from db_conn import DatabaseConnector
-import logging
-
-logger = logging.getLogger(__name__)
 
 
 class PredictionData:
