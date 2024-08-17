@@ -1,7 +1,6 @@
 import os
 from dotenv import load_dotenv
 import mysql.connector
-#from sqlalchemy import create_engine
 
 class DatabaseConnector:
     def __init__(self):
@@ -30,30 +29,17 @@ class DatabaseConnector:
             print(f"Error connecting to the database: {e}")
             return None
 
-    def alchemy_connection(self):
-        # Create the database connection string
-        db_url = f"mysql://{self.user}:{self.password}@{self.host}:{self.port}/{self.database}"
+    # def alchemy_connection(self):
+    #     # Create the database connection string
+    #     db_url = f"mysql://{self.user}:{self.password}@{self.host}:{self.port}/{self.database}"
 
-        # Create SQLAlchemy engine
-        engine = create_engine(db_url)
-        return engine
+    #     # Create SQLAlchemy engine
+    #     engine = create_engine(db_url)
+    #     return engine
 
 # Example usage
-#if __name__ == "__main__":
+# if __name__ == "__main__":
 #    db_connector = DatabaseConnector()
 #    connection = db_connector.get_connection()
     # Use the connection for database operations
     # Remember to close the connection when done: connection.close()
-
-# SQL Query
-#query = "SELECT * FROM your_table"
-
-# Execute the query and read into DataFrame
-#df = pd.read_sql_query(query, engine)
-
-# Close the connection
-#engine.dispose()
-
-# Display the DataFrame
-#print(df)
-
