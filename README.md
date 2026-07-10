@@ -73,7 +73,7 @@ Database selection:
 - If neither is configured, the app falls back to
   `sqlite:///data/pipeline_predictions.sqlite3`.
 
-Expected MySQL variables:
+Expected MySQL and PORT variables-these are only from initial testing...change to your env:
 
 ```bash
 API_HOST_PORT=8560
