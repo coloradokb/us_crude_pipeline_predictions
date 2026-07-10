@@ -1,0 +1,38 @@
+services:
+  api:
+    build:
+      context: .
+    image: pipeline_pred:latest
+    container_name: pipe_predictor_api
+    env_file:
+      - .env
+    environment:
+      PORT: "8000"
+    ports:
+      - "${API_HOST_PORT:-8560}:8000"
+    restart: unless-stopped
+    command: ["api"]
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        VITE_API_BASE_URL: "/api"
+    image: pipeline_pred_frontend:latest
+    container_name: pipe_predictor_frontend
+    ports:
+      - "${FRONTEND_HOST_PORT:-8561}:80"
+    restart: unless-stopped
+    depends_on:
+      - api
+
+  scheduler:
+    image: pipeline_pred:latest
+    container_name: pipe_predictor_scheduler
+    env_file:
+      - .env
+    restart: unless-stopped
+    command: ["scheduler"]
+    profiles:
+      - scheduler
