@@ -101,28 +101,6 @@ When proposing or implementing solutions:
 
 ---
 
-## Real-Time Data Guidance
-- Be explicit about whether logic uses trades, partial candles, or closed candles.
-- Normalize timestamps consistently.
-- Handle reconnects, missing data, duplicates, and partial websocket failures gracefully.
-- Document any assumptions about exchange behavior, symbol naming, or aggregation windows.
-- Minimize noisy signal generation caused by unstable or incomplete intrabar data.
-
----
-
-## Notification and Signal Guidance
-- Alerts should be deterministic and explainable.
-- Every signal should clearly identify:
-  - symbol
-  - timeframe
-  - triggering condition
-  - relevant Fib level or derived metric
-  - event timestamp
-- Implement cooldown or deduplication logic to avoid spam.
-- Prefer idempotent notification workflows where possible.
-
----
-
 ## Frontend / Web Client Direction
 This project is expected to deliver real-time and near-time data for web clients, database servers and cache servers.
 
@@ -169,9 +147,8 @@ For larger efforts, phase work as:
 ## Default Assumptions for This Repository
 Unless told otherwise, assume:
 - Python is the primary language
-- Real-time market data is important
-- Fibonacci-based analytics and alerts are core features
-- A web client frontend will eventually consume backend outputs
+- Correct and Real-time market data is important
+- A web client frontend consumes backend outputs
 - Data will be stored in relational databases and cache servers
 - Internal tools and services should be practical, maintainable, and automation-friendly
 
